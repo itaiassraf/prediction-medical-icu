@@ -1,5 +1,3 @@
-# Install first:
-# pip install streamlit plotly scipy gdown
 
 import streamlit as st
 import pandas as pd
@@ -7,13 +5,25 @@ import plotly.graph_objs as go
 from scipy.stats import ttest_ind
 import gdown
 
-# Download the dataset from Google Drive (public link)
-file_id = "1CvjJObXyhuLX5ElQ9PStpXx6rYQWPPpC"
-gdown.download(f"https://drive.google.com/uc?id={file_id}", "training_v2.csv", quiet=False)
+# Set page config
+st.set_page_config(layout="wide")
 
-data = pd.read_csv("training_v2.csv")
+# Download CSV from Google Drive
+file_url = "https://drive.google.com/uc?id=1CvjJObXyhuLX5ElQ9PStpXx6rYQWPPpC"
+output = "training_v2.csv"
+gdown.download(file_url, output, quiet=False)
 
-# Variables categorized with Hebrew descriptions
+# Load data
+data = pd.read_csv(output)
+
+# Toggle theme
+is_dark = st.checkbox("🌙 Dark Mode", value=True)
+bg_color = "#1c1e29" if is_dark else "#FFFFFF"
+paper_color = "#1c1e29" if is_dark else "#FFFFFF"
+font_color = "#f0f4f8" if is_dark else "#000000"
+box_color = "#252934" if is_dark else "#F0F0F0"
+
+# Category definitions
 categories = {
     '🩸 בדיקת דם': {
         'albumin_apache': 'רמת אלבומין (תפקוד תזונתי וכבד)',
@@ -49,57 +59,41 @@ categories = {
     }
 }
 
-# Toggle for dark mode
-dark_mode = st.checkbox("🌙 Dark Mode", value=True)
+# UI Layout
+st.title("🌡️ ICU Patient Analysis Dashboard 📊")
+category = st.selectbox("Select Category", list(categories.keys()))
+desc_to_var = {desc: var for var, desc in categories[category].items()}
+selected_desc = st.selectbox("Select Variable", list(desc_to_var.keys()))
+selected_var = desc_to_var[selected_desc]
 
-# Style settings
-bg_color = "#1c1e29" if dark_mode else "#ffffff"
-font_color = "#f0f4f8" if dark_mode else "#000000"
-card_bg = "#252934" if dark_mode else "#f5f5f5"
-
-st.markdown(
-    f"""
-    <div style='background-color:{bg_color}; padding:30px; color:{font_color}; font-family:Arial, sans-serif'>
-        <h1 style='text-align:center; color:#f39c12; font-size:36px;'>🌡️ ICU Patient Analysis Dashboard 📊</h1>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-category = st.selectbox("בחר קטגוריה", list(categories.keys()))
-variable_options = [{'label': desc, 'value': var} for var, desc in categories[category].items()]
-selected_var = st.selectbox("בחר משתנה", variable_options, format_func=lambda x: x['label'])['value']
-
+# Data filtering
 df = data[['hospital_death', selected_var]].dropna()
 survived = df[df['hospital_death'] == 0][selected_var]
 died = df[df['hospital_death'] == 1][selected_var]
 
-# Statistics
+# T-Test
 t_stat, p_value = ttest_ind(survived, died, equal_var=False)
 significant = '✅ Yes' if p_value < 0.05 else '❌ No'
 
-# Graph
+# Plot
 fig = go.Figure()
-fig.add_trace(go.Histogram(x=survived, name='Survived 🟢', opacity=0.8, marker_color='#00c853'))
-fig.add_trace(go.Histogram(x=died, name='Died 🔴', opacity=0.8, marker_color='#ff5252'))
-
+fig.add_trace(go.Histogram(x=survived, name='Survived', opacity=0.8, marker_color='#00c853'))
+fig.add_trace(go.Histogram(x=died, name='Died', opacity=0.8, marker_color='#ff5252'))
 fig.update_layout(
     barmode='overlay',
-    title=f'<b>{[v for k, v in categories[category].items() if k == selected_var][0]}</b>',
+    title=dict(text=f'<b>{selected_desc}</b>', font=dict(color=font_color)),
     plot_bgcolor=bg_color,
-    paper_bgcolor=bg_color,
+    paper_bgcolor=paper_color,
     font=dict(color=font_color),
     legend=dict(orientation='h', x=0.35, y=-0.15, font=dict(color=font_color))
 )
 
+# Show plot
 st.plotly_chart(fig, use_container_width=True)
 
-# Stats display
-st.markdown(
-    f"""
-    <div style='text-align:center; font-size:20px; background-color:{card_bg}; padding:20px; border-radius:12px; color:{font_color};'>
-        🟢 Survived Mean: {survived.mean():.2f}, 🔴 Died Mean: {died.mean():.2f}, 🎯 P-Value: {p_value:.4f}, Significant: {significant}
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+# Summary stats in English
+summary_html = f'''<div style='text-align:center; font-size:20px; background-color:{box_color}; padding:20px; border-radius:12px; color:{font_color};'>
+<b>🟢 Survived Mean</b>: {survived.mean():.2f}, <b>🔴 Died Mean</b>: {died.mean():.2f}, 
+<b>🎯 P-Value</b>: {p_value:.4f}, <b>Statistically Significant</b>: {significant}
+</div>'''
+st.markdown(summary_html, unsafe_allow_html=True)
