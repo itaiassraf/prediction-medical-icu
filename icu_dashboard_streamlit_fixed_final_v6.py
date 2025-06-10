@@ -59,12 +59,20 @@ categories = {
     }
 }
 
-# UI Layout
-st.title("🌡️ ICU Patient Analysis Dashboard 📊")
+# Title centered
+st.markdown(f"""
+<div style='text-align:center;'>
+<h1 style='color:#f39c12; font-size:36px;'>🌡️ ICU Patient Analysis Dashboard 📊</h1>
+</div>
+""", unsafe_allow_html=True)
+
+# Dropdowns aligned horizontally
+st.markdown("<div style='display:flex; justify-content:center; gap:20px;'>", unsafe_allow_html=True)
 category = st.selectbox("Select Category", list(categories.keys()))
 desc_to_var = {desc: var for var, desc in categories[category].items()}
 selected_desc = st.selectbox("Select Variable", list(desc_to_var.keys()))
 selected_var = desc_to_var[selected_desc]
+st.markdown("</div>", unsafe_allow_html=True)
 
 # Data filtering
 df = data[['hospital_death', selected_var]].dropna()
@@ -91,7 +99,7 @@ fig.update_layout(
 # Show plot
 st.plotly_chart(fig, use_container_width=True)
 
-# Summary stats in English
+# Summary stats
 summary_html = f'''<div style='text-align:center; font-size:20px; background-color:{box_color}; padding:20px; border-radius:12px; color:{font_color};'>
 <b>🟢 Survived Mean</b>: {survived.mean():.2f}, <b>🔴 Died Mean</b>: {died.mean():.2f}, 
 <b>🎯 P-Value</b>: {p_value:.4f}, <b>Statistically Significant</b>: {significant}
