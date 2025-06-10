@@ -71,15 +71,20 @@ significant = '✅ כן' if p_value < 0.05 else '❌ לא'
 
 # Plot
 fig = go.Figure()
-fig.add_trace(go.Histogram(x=survived, name='Survived 🟢', opacity=0.8, marker_color='#00c853'))
-fig.add_trace(go.Histogram(x=died, name='Died 🔴', opacity=0.8, marker_color='#ff5252'))
+fig.add_trace(go.Histogram(x=survived, name='Survived', opacity=0.8, marker_color='#00c853'))
+fig.add_trace(go.Histogram(x=died, name='Died', opacity=0.8, marker_color='#ff5252'))
 fig.update_layout(
     barmode='overlay',
     title=f'<b>{selected_desc}</b>',
     plot_bgcolor='#1c1e29',
     paper_bgcolor='#1c1e29',
     font=dict(color='#f0f4f8'),
-    legend=dict(orientation='h', x=0.35, y=-0.15)
+    legend=dict(
+        orientation='h',
+        x=0.35,
+        y=-0.15,
+        font=dict(color='#f0f4f8')
+    )
 )
 
 # Display
