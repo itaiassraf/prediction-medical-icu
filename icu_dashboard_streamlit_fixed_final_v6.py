@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import plotly.graph_objs as go
@@ -7,15 +8,15 @@ import gdown
 # Set page config
 st.set_page_config(layout="wide")
 
-# Download the CSV from Google Drive (public link)
+# Download CSV from Google Drive
 file_url = "https://drive.google.com/uc?id=1CvjJObXyhuLX5ElQ9PStpXx6rYQWPPpC"
 output = "training_v2.csv"
 gdown.download(file_url, output, quiet=False)
 
-# Load the dataset
+# Load data
 data = pd.read_csv(output)
 
-# Categories with Hebrew descriptions
+# Category definitions
 categories = {
     '🩸 בדיקת דם': {
         'albumin_apache': 'רמת אלבומין (תפקוד תזונתי וכבד)',
@@ -51,23 +52,21 @@ categories = {
     }
 }
 
-# UI
+# UI Layout
 st.title("🌡️ ICU Patient Analysis Dashboard 📊")
-category = st.selectbox("בחר קטגוריה", list(categories.keys()))
-
-# Reverse mapping from Hebrew description to variable
+category = st.selectbox("Select Category", list(categories.keys()))
 desc_to_var = {desc: var for var, desc in categories[category].items()}
-selected_desc = st.selectbox("בחר משתנה", list(desc_to_var.keys()))
+selected_desc = st.selectbox("Select Variable", list(desc_to_var.keys()))
 selected_var = desc_to_var[selected_desc]
 
-# Filter data
+# Data filtering
 df = data[['hospital_death', selected_var]].dropna()
 survived = df[df['hospital_death'] == 0][selected_var]
 died = df[df['hospital_death'] == 1][selected_var]
 
-# t-test
+# T-Test
 t_stat, p_value = ttest_ind(survived, died, equal_var=False)
-significant = '✅ כן' if p_value < 0.05 else '❌ לא'
+significant = '✅ Yes' if p_value < 0.05 else '❌ No'
 
 # Plot
 fig = go.Figure()
@@ -79,19 +78,15 @@ fig.update_layout(
     plot_bgcolor='#1c1e29',
     paper_bgcolor='#1c1e29',
     font=dict(color='#f0f4f8'),
-    legend=dict(
-        orientation='h',
-        x=0.35,
-        y=-0.15,
-        font=dict(color='#f0f4f8')
-    )
+    legend=dict(orientation='h', x=0.35, y=-0.15, font=dict(color='#f0f4f8'))
 )
 
-# Display
+# Show plot
 st.plotly_chart(fig, use_container_width=True)
-summary_html = f'''<div style='text-align:center; font-size:20px; background-color:#252934; padding:20px; border-radius:12px; color:#f0f4f8;'><b>🟢 Survived Mean</b>: {survived.mean():.2f}, <b>🔴 Died Mean</b>: {died.mean():.2f}, <b>🎯 P-Value</b>: {p_value:.4f}, <b>Statistically Significant</b>: {significant}</div>'''
-    "<div style='text-align:center; font-size:20px; background-color:#252934; padding:20px; border-radius:12px; color:#f0f4f8;'>"
-    f"🟢 ממוצע שורדים: {survived.mean():.2f}, 🔴 ממוצע נפטרים: {died.mean():.2f}, 🎯 ערך-P: {p_value:.4f}, מובהקות סטטיסטית: {significant}"
-    "</div>", unsafe_allow_html=True
+
+# Summary stats in English
+summary_html = f'''<div style='text-align:center; font-size:20px; background-color:#252934; padding:20px; border-radius:12px; color:#f0f4f8;'>
+<b>🟢 Survived Mean</b>: {survived.mean():.2f}, <b>🔴 Died Mean</b>: {died.mean():.2f}, 
+<b>🎯 P-Value</b>: {p_value:.4f}, <b>Statistically Significant</b>: {significant}
+</div>'''
 st.markdown(summary_html, unsafe_allow_html=True)
-)
