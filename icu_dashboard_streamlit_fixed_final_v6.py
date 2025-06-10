@@ -89,11 +89,7 @@ fig.update_layout(
 
 # Display
 st.plotly_chart(fig, use_container_width=True)
-summary_html = f"""
-<div style='text-align:center; font-size:20px; background-color:#252934; padding:20px; border-radius:12px; color:#f0f4f8;'>
-🟢 <b>Survived Mean</b>: {survived.mean():.2f}, 🔴 <b>Died Mean</b>: {died.mean():.2f}, 🎯 <b>P-Value</b>: {p_value:.4f}, <b>Statistically Significant</b>: {significant}
-</div>
-"""
+summary_html = f'''<div style='text-align:center; font-size:20px; background-color:#252934; padding:20px; border-radius:12px; color:#f0f4f8;'><b>🟢 Survived Mean</b>: {survived.mean():.2f}, <b>🔴 Died Mean</b>: {died.mean():.2f}, <b>🎯 P-Value</b>: {p_value:.4f}, <b>Statistically Significant</b>: {significant}</div>'''
     "<div style='text-align:center; font-size:20px; background-color:#252934; padding:20px; border-radius:12px; color:#f0f4f8;'>"
     f"🟢 ממוצע שורדים: {survived.mean():.2f}, 🔴 ממוצע נפטרים: {died.mean():.2f}, 🎯 ערך-P: {p_value:.4f}, מובהקות סטטיסטית: {significant}"
     "</div>", unsafe_allow_html=True
