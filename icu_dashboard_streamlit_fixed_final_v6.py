@@ -6,7 +6,16 @@ from scipy.stats import ttest_ind
 import gdown
 
 # Set page config
-st.set_page_config(layout="wide")
+st.set_page_config(page_title='ICU Dashboard', layout="wide")
+
+# Force background color to black
+st.markdown("""
+<style>
+    body {
+        background-color: #1c1e29 !important;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # Download CSV from Google Drive
 file_url = "https://drive.google.com/uc?id=1CvjJObXyhuLX5ElQ9PStpXx6rYQWPPpC"
